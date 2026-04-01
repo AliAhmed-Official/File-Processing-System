@@ -3,8 +3,8 @@ import { FieldType } from '../types/enums';
 
 const ValidationRulesSchema = z.object({
   requiredFields: z.array(z.string()).optional().default([]),
-  fieldTypes: z.record(z.nativeEnum(FieldType)).optional().default({}),
-  customPatterns: z.record(z.string()).optional().default({}),
+  fieldTypes: z.record(z.string(), z.nativeEnum(FieldType)).optional().default({}),
+  customPatterns: z.record(z.string(), z.string()).optional().default({}),
 });
 
 export const PresignRequestSchema = z.object({

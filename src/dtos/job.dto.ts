@@ -25,3 +25,12 @@ export interface JobListFilters {
   batchId?: string;
   priority?: number;
 }
+
+export interface BatchStatusDTO {
+  batchId: string;
+  totalJobs: number;
+  completed: number;
+  failed: number;
+  inProgress: number;
+  pending: number;
+}

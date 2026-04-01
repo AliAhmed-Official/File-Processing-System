@@ -11,7 +11,7 @@ export class MongoJobRepository implements IJobRepository {
   }
 
   async createMany(data: CreateJobData[]): Promise<IJobDocument[]> {
-    return JobModel.insertMany(data);
+    return JobModel.insertMany(data) as unknown as Promise<IJobDocument[]>;
   }
 
   async findById(id: string): Promise<IJobDocument | null> {
