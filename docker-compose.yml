@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  s3-init:
+    image: amazon/aws-cli
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    entrypoint: >
+      sh -c "
+        aws --endpoint-url=http://localstack:4566 s3 mb s3://file-uploads &&
+        aws --endpoint-url=http://localstack:4566 s3api put-bucket-lifecycle-configuration
+        --bucket file-uploads
+        --lifecycle-configuration file:///lifecycle.json
+      "
+    volumes:
+      - ./infra/s3-lifecycle.json:/lifecycle.json
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    ports:
+      - "3000:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      s3-init:
+        condition: service_completed_successfully
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis
+      - S3_ENDPOINT=http://localstack:4566
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    depends_on:
+      redis:
+        condition: service_healthy
+      s3-init:
+        condition: service_completed_successfully
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis
+      - S3_ENDPOINT=http://localstack:4566
+
+volumes:
+  redis-data:
