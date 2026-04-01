@@ -134,7 +134,7 @@ file-processing-system/
 │   │   │   ├── useStats.ts
 │   │   │   └── useUpload.ts
 │   │   ├── services/
-│   │   │   ├── api.ts                   # Axios instance
+│   │   │   ├── api.ts                   # Fetch wrapper (base URL, error handling)
 │   │   │   └── socket.ts               # Socket.IO client singleton
 │   │   ├── pages/
 │   │   │   ├── DashboardPage.tsx
@@ -162,6 +162,7 @@ file-processing-system/
 | Duplicate Detection | Native Set + bloom-filters | Hybrid hash/bloom strategy |
 | Real-time | Socket.IO + @socket.io/redis-adapter | Progress push to dashboard |
 | Dashboard | React + Vite + TypeScript + Tailwind CSS | Monitoring UI |
+| Data Fetching | TanStack React Query + native fetch | Server state management, caching, auto-refetch |
 | Charts | Recharts | Lightweight React-native charts |
 | Validation | Zod | Request DTO validation |
 | Security | helmet, cors, express-rate-limit, express-mongo-sanitize, xss-clean | API hardening |
@@ -608,11 +609,11 @@ Dashboard joins rooms on page navigation, leaves on unmount.
 
 ### State Management
 
-React hooks + context (no Redux). SocketContext provides socket instance. Data fetching: initial via API (axios), live updates via Socket.IO, fallback polling every 30s if socket disconnects.
+TanStack React Query + context (no Redux). QueryClient provides caching, refetching, and loading/error states. SocketContext provides socket instance. Data fetching: React Query with native fetch for initial + polling, Socket.IO events invalidate queries for real-time updates, React Query's built-in refetchInterval as fallback if socket disconnects.
 
 ### Tech Stack (Dashboard)
 
-React 18, Vite, TypeScript, React Router v6, Axios, Socket.IO Client, Recharts, Tailwind CSS.
+React 18, Vite, TypeScript, React Router v6, TanStack React Query, Socket.IO Client, Recharts, Tailwind CSS. API calls use native fetch via a thin wrapper — no axios.
 
 ---
 
