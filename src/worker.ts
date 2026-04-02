@@ -4,7 +4,6 @@ import { connectDB } from './config/db';
 import { createRedisConnection } from './config/redis';
 import { createFileRepository, createJobRepository, createResultRepository } from './repositories';
 import { StorageService } from './services/storage.service';
-import { CacheService } from './services/cache.service';
 import { socketService } from './services/socket.service';
 import { processCsv } from './processors/csv.processor';
 import { createDuplicateDetector } from './processors/duplicateDetector';
@@ -14,13 +13,13 @@ import { logger } from './utils/logger';
 const startWorker = async (): Promise<void> => {
   await connectDB();
 
-  const workerRedis = createRedisConnection();
-  const cacheRedis = createRedisConnection();
+  const redisConnection = createRedisConnection();
+  const emitterRedis = createRedisConnection();
   const fileRepo = createFileRepository();
   const jobRepo = createJobRepository();
   const resultRepo = createResultRepository();
   const storageService = new StorageService();
-  const cacheService = new CacheService(cacheRedis);
+  socketService.initializeEmitter(emitterRedis);
 
   const worker = new Worker(
     'file-processing',
@@ -32,9 +31,6 @@ const startWorker = async (): Promise<void> => {
       await jobRepo.updateStatus(jobId, JobStatus.PROCESSING);
       await jobRepo.setStartedAt(jobId);
       await jobRepo.incrementAttempts(jobId);
-      await cacheService.delete(`job:${jobId}`);
-      await cacheService.deletePattern('jobs:list:*');
-      await cacheService.delete('stats:dashboard');
 
       const file = await fileRepo.findById(fileId);
       if (!file) {
@@ -49,14 +45,26 @@ const startWorker = async (): Promise<void> => {
       const stream = await storageService.getObjectStream(file.s3Key);
       const duplicateDetector = createDuplicateDetector(file.size, config.DUPLICATE_HASH_THRESHOLD_BYTES);
 
+      let validationRules = job.validationRules;
+      if (validationRules) {
+        validationRules = {
+          requiredFields: validationRules.requiredFields,
+          fieldTypes: validationRules.fieldTypes instanceof Map
+            ? Object.fromEntries(validationRules.fieldTypes)
+            : validationRules.fieldTypes,
+          customPatterns: validationRules.customPatterns instanceof Map
+            ? Object.fromEntries(validationRules.customPatterns)
+            : validationRules.customPatterns,
+        };
+      }
+
       const report = await processCsv({
         stream,
         fileSize: file.size,
-        validationRules: job.validationRules,
+        validationRules,
         duplicateDetector,
         onProgress: async (progress: number) => {
           await bullJob.updateProgress(progress);
-          await jobRepo.updateProgress(jobId, progress);
           socketService.emitJobProgress(jobId, progress);
         },
       });
@@ -77,11 +85,6 @@ const startWorker = async (): Promise<void> => {
       await jobRepo.updateProgress(jobId, 100);
       await jobRepo.setCompletedAt(jobId);
 
-      await cacheService.delete(`job:${jobId}`);
-      await cacheService.set(`result:${jobId}`, result, 300);
-      await cacheService.deletePattern('jobs:list:*');
-      await cacheService.delete('stats:dashboard');
-
       socketService.emitJobCompleted(jobId, result._id.toString());
 
       if (job.batchId) {
@@ -93,7 +96,7 @@ const startWorker = async (): Promise<void> => {
       logger.info('Job completed:', { jobId, totalRows: report.totalRows });
     },
     {
-      connection: workerRedis,
+      connection: redisConnection,
       concurrency: config.QUEUE_CONCURRENCY,
       limiter: {
         max: config.QUEUE_RATE_LIMIT_MAX,
@@ -109,9 +112,6 @@ const startWorker = async (): Promise<void> => {
 
     if (bullJob.attemptsMade >= config.QUEUE_MAX_RETRIES) {
       await jobRepo.updateStatus(jobId, JobStatus.FAILED, error.message);
-      await cacheService.delete(`job:${jobId}`);
-      await cacheService.deletePattern('jobs:list:*');
-      await cacheService.delete('stats:dashboard');
       socketService.emitJobFailed(jobId, error.message, bullJob.attemptsMade);
     }
   });

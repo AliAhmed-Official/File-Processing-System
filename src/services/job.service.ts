@@ -15,7 +15,7 @@ export class JobService {
     private fileRepo: IFileRepository,
     private resultRepo: IResultRepository,
     private cache: ICacheService
-  ) {}
+  ) { }
 
   private toJobStatusDTO(job: IJobDocument): JobStatusDTO {
     return {
@@ -33,30 +33,16 @@ export class JobService {
   }
 
   async getJobStatus(id: string): Promise<JobStatusDTO> {
-    const cached = await this.cache.get<JobStatusDTO>(`job:${id}`);
-    if (cached) return cached;
-
     const job = await this.jobRepo.findById(id);
     if (!job) throw ApiError.notFound('Job not found');
-
-    const dto = this.toJobStatusDTO(job);
-
-    const ttl = job.status === JobStatus.PROCESSING ? 3
-      : job.status === JobStatus.PENDING ? 5
-      : 60;
-    await this.cache.set(`job:${id}`, dto, ttl);
-
-    return dto;
+    return this.toJobStatusDTO(job);
   }
 
   async getJobResult(id: string): Promise<JobResultDTO> {
-    const cached = await this.cache.get<JobResultDTO>(`result:${id}`);
-    if (cached) return cached;
-
     const result = await this.resultRepo.findByJobId(id);
     if (!result) throw ApiError.notFound('Result not found');
 
-    const dto: JobResultDTO = {
+    return {
       jobId: result.jobId.toString(),
       fileId: result.fileId.toString(),
       totalRows: result.totalRows,
@@ -68,10 +54,6 @@ export class JobService {
       summary: result.summary,
       createdAt: result.createdAt,
     };
-
-    await this.cache.set(`result:${id}`, dto, 300);
-
-    return dto;
   }
 
   async listJobs(filters: JobListFilters, pagination: PaginationQuery): Promise<JobListDTO> {
@@ -121,9 +103,7 @@ export class JobService {
     };
   }
 
-  async invalidateJobCache(jobId: string): Promise<void> {
-    await this.cache.delete(`job:${jobId}`);
-    await this.cache.deletePattern('jobs:list:*');
+  async invalidateJobCache(): Promise<void> {
     await this.cache.delete('stats:dashboard');
   }
 }

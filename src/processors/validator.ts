@@ -45,13 +45,15 @@ export class RowValidator {
       }
     }
 
-    for (const [field, pattern] of Object.entries(this.rules.customPatterns)) {
+    const patternEntries = Object.entries(this.rules.customPatterns);
+    for (const [field, pattern] of patternEntries) {
       const value = row[field];
       if (value === undefined || value.trim() === '') continue;
 
       try {
         const regex = this.parseRegex(pattern);
-        if (!regex.test(value)) {
+        const matches = regex.test(value);
+        if (!matches) {
           return { valid: false, reason: `Field "${field}" does not match pattern "${pattern}"` };
         }
       } catch {

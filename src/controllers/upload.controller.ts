@@ -2,12 +2,14 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { StorageService } from '../services/storage.service';
 import { QueueService } from '../services/queue.service';
+import { JobService } from '../services/job.service';
 import { IJobRepository, CreateJobData } from '../repositories/interfaces/IJobRepository';
 import { IFileRepository, CreateFileData } from '../repositories/interfaces/IFileRepository';
 import { PresignRequestSchema, ConfirmUploadSchema, BatchPresignRequestSchema, BatchConfirmSchema } from '../validators/upload.validator';
 import { config } from '../config';
 import { ApiError } from '../utils/ApiError';
 import { asyncHandler } from '../utils/asyncHandler';
+import { socketService } from '../services/socket.service';
 import { logger } from '../utils/logger';
 
 export class UploadController {
@@ -15,7 +17,8 @@ export class UploadController {
     private storageService: StorageService,
     private queueService: QueueService,
     private fileRepo: IFileRepository,
-    private jobRepo: IJobRepository
+    private jobRepo: IJobRepository,
+    private jobService: JobService
   ) { }
 
   presign = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -65,6 +68,8 @@ export class UploadController {
     });
 
     await this.queueService.addJob(job._id.toString(), file._id.toString(), job.priority);
+    await this.jobService.invalidateJobCache();
+    socketService.emitStatsUpdate();
 
     res.status(201).json({
       success: true,
@@ -143,6 +148,8 @@ export class UploadController {
     }
 
     await this.queueService.addBatchJobs(jobsData);
+    await this.jobService.invalidateJobCache();
+    socketService.emitStatsUpdate();
 
     res.status(201).json({
       success: true,

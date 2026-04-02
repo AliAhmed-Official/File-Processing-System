@@ -13,38 +13,6 @@ services:
       timeout: 5s
       retries: 5
 
-  localstack:
-    image: localstack/localstack:2.1
-    ports:
-      - "4566:4566"
-    environment:
-      - SERVICES=s3
-      - LOCALSTACK_ACKNOWLEDGE_ACCOUNT_REQUIREMENT=1
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  s3-init:
-    image: amazon/aws-cli
-    depends_on:
-      localstack:
-        condition: service_healthy
-    environment:
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_DEFAULT_REGION=us-east-1
-    entrypoint: >
-      sh -c "
-        aws --endpoint-url=http://localstack:4566 s3 mb s3://file-uploads &&
-        aws --endpoint-url=http://localstack:4566 s3api put-bucket-lifecycle-configuration --bucket file-uploads --lifecycle-configuration file:///lifecycle.json
-      "
-    volumes:
-      - ./infra/s3-lifecycle.json:/lifecycle.json
-
   api:
     build:
       context: .
@@ -55,15 +23,9 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      s3-init:
-        condition: service_completed_successfully
     env_file: .env
     environment:
       - REDIS_HOST=redis
-      - S3_ENDPOINT=http://localstack:4566
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_DEFAULT_REGION=us-east-1
 
   worker:
     build:
@@ -73,15 +35,18 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      s3-init:
-        condition: service_completed_successfully
     env_file: .env
     environment:
       - REDIS_HOST=redis
-      - S3_ENDPOINT=http://localstack:4566
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_DEFAULT_REGION=us-east-1
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
 
 volumes:
   redis-data:

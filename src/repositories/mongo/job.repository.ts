@@ -19,23 +19,23 @@ export class MongoJobRepository implements IJobRepository {
   }
 
   async updateStatus(id: string, status: JobStatus, error: string | null = null): Promise<IJobDocument | null> {
-    return JobModel.findByIdAndUpdate(id, { status, error }, { new: true });
+    return JobModel.findByIdAndUpdate(id, { status, error }, { returnDocument: 'after' });
   }
 
   async updateProgress(id: string, progress: number): Promise<IJobDocument | null> {
-    return JobModel.findByIdAndUpdate(id, { progress }, { new: true });
+    return JobModel.findByIdAndUpdate(id, { progress }, { returnDocument: 'after' });
   }
 
   async incrementAttempts(id: string): Promise<IJobDocument | null> {
-    return JobModel.findByIdAndUpdate(id, { $inc: { attempts: 1 } }, { new: true });
+    return JobModel.findByIdAndUpdate(id, { $inc: { attempts: 1 } }, { returnDocument: 'after' });
   }
 
   async setStartedAt(id: string): Promise<IJobDocument | null> {
-    return JobModel.findByIdAndUpdate(id, { startedAt: new Date() }, { new: true });
+    return JobModel.findByIdAndUpdate(id, { startedAt: new Date() }, { returnDocument: 'after' });
   }
 
   async setCompletedAt(id: string): Promise<IJobDocument | null> {
-    return JobModel.findByIdAndUpdate(id, { completedAt: new Date() }, { new: true });
+    return JobModel.findByIdAndUpdate(id, { completedAt: new Date() }, { returnDocument: 'after' });
   }
 
   async list(filters: JobListFilters, pagination: PaginationQuery): Promise<PaginatedResult<IJobDocument>> {

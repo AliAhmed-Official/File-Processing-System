@@ -24,19 +24,17 @@ import { logger } from './utils/logger';
 const startServer = async (): Promise<void> => {
   await connectDB();
 
-  const queueRedis = createRedisConnection();
-  const cacheRedis = createRedisConnection();
-
+  const redisConnection = createRedisConnection();
   const fileRepo = createFileRepository();
   const jobRepo = createJobRepository();
   const resultRepo = createResultRepository();
 
-  const cacheService = new CacheService(cacheRedis);
+  const cacheService = new CacheService(redisConnection);
   const storageService = new StorageService();
-  const queueService = new QueueService(queueRedis);
+  const queueService = new QueueService(redisConnection);
   const jobService = new JobService(jobRepo, fileRepo, resultRepo, cacheService);
 
-  const uploadController = new UploadController(storageService, queueService, fileRepo, jobRepo);
+  const uploadController = new UploadController(storageService, queueService, fileRepo, jobRepo, jobService);
   const jobController = new JobController(jobService);
 
   const app = express();

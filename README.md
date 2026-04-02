@@ -9,7 +9,7 @@ A MERN stack backend system for asynchronous CSV file processing using job queue
 - **Dashboard:** React + Vite + Tailwind — real-time job monitoring, upload, stats
 - **Queue:** Redis + BullMQ — priority queue with retry, concurrency control
 - **Database:** MongoDB Atlas — File, Job, Result collections with repository pattern
-- **Storage:** Amazon S3 (LocalStack for local dev) — streaming upload/download
+- **Storage:** Amazon S3 streaming upload/download
 
 ## Quick Start
 
@@ -35,9 +35,9 @@ A MERN stack backend system for asynchronous CSV file processing using job queue
    # Edit .env — set MONGO_URI to your Atlas connection string
    ```
 
-3. Start infrastructure (Redis + LocalStack):
+3. Start infrastructure (Redis):
    ```bash
-   docker compose up redis localstack s3-init -d
+   docker compose up redis -d
    ```
 
 4. Start API and Worker:
@@ -83,14 +83,6 @@ docker compose up --build
 - **Repository pattern:** Database-agnostic data access. Swap MongoDB for PostgreSQL by implementing new repository classes.
 - **Redis caching:** Job status and stats cached with TTL. Cache invalidated on worker updates. Zero additional infrastructure.
 - **Socket.IO real-time updates:** Live progress tracking, job completion/failure events, dashboard auto-refresh via Redis adapter for horizontal scaling.
-
-## Testing
-
-```bash
-npm test                  # All tests
-npm run test:unit         # Unit tests only
-npm run test:integration  # Integration tests (requires Atlas)
-```
 
 ## Scaling Strategy
 

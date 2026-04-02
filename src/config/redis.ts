@@ -8,8 +8,12 @@ export const createRedisConnection = (): IORedis => {
     port: config.REDIS_PORT,
     maxRetriesPerRequest: null,
     enableReadyCheck: true,
+    lazyConnect: false,
     retryStrategy(times) {
       return Math.min(times * 200, 5000);
+    },
+    reconnectOnError(err) {
+      return true;
     },
   });
 
