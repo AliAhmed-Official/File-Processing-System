@@ -52,6 +52,8 @@ export const useUpload = () => {
         xhr.send(file);
       });
 
+      console.log('File uploaded to S3, confirming with backend...');
+
       setState((prev) => ({ ...prev, status: 'confirming' }));
 
       const confirm = await api.post<UploadResponse>('/upload/confirm', {
@@ -68,6 +70,7 @@ export const useUpload = () => {
 
       return confirm.jobId;
     } catch (err) {
+      console.log(err)
       const message = err instanceof Error ? err.message : 'Upload failed';
       setState((prev) => ({ ...prev, status: 'error', error: message }));
       return null;

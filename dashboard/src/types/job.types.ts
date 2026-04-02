@@ -1,3 +1,5 @@
+import type { ValidationRules } from './upload.types';
+
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export interface JobStatusData {
@@ -7,6 +9,7 @@ export interface JobStatusData {
   priority: number;
   attempts: number;
   error: string | null;
+  validationRules: ValidationRules | null;
   createdAt: string;
   startedAt: string | null;
   completedAt: string | null;

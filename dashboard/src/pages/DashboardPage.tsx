@@ -9,25 +9,28 @@ import UploadZone from '../components/upload/UploadZone';
 import Pagination from '../components/common/Pagination';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import StatsCardsSkeleton from '../components/stats/StatsCardsSkeleton';
 import { useStats } from '../hooks/useStats';
 import { useJobs } from '../hooks/useJobs';
 import type { JobListFilters } from '../types/job.types';
 
 export default function DashboardPage() {
   const [filters, setFilters] = useState<JobListFilters>({ page: 1, limit: 20 });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: stats, isLoading: statsLoading } = useStats();
   const { data: jobList, isLoading: jobsLoading } = useJobs(filters);
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
+    <div className="flex min-h-dvh">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto bg-gray-100 p-6 space-y-6">
+        <Header onMenuToggle={() => setSidebarOpen(true)} />
+        <main id="main-content" className="flex-1 overflow-auto bg-gray-100 p-4 md:p-6 space-y-6">
           <UploadZone />
 
-          {statsLoading ? <LoadingSpinner /> : stats && (
-            <div className="space-y-4">
+          {statsLoading ? <StatsCardsSkeleton /> : stats && (
+            <div className="space-y-4 stagger-children">
               <StatsCards stats={stats} />
               <StatusChart stats={stats} />
             </div>
@@ -39,7 +42,7 @@ export default function DashboardPage() {
               <JobFilters filters={filters} onFilterChange={setFilters} />
             </div>
 
-            {jobsLoading ? <LoadingSpinner /> : !jobList || jobList.jobs.length === 0 ? (
+            {jobsLoading ? <LoadingSpinner label="Loading jobs" /> : !jobList || jobList.jobs.length === 0 ? (
               <EmptyState message="No jobs yet. Upload a CSV file to get started." />
             ) : (
               <>

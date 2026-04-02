@@ -57,7 +57,7 @@ const startServer = async (): Promise<void> => {
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
   app.use(express.json());
-  app.use(sanitizeMiddleware);
+  //app.use(sanitizeMiddleware);
 
   app.get('/health', async (_req, res) => {
     res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } });

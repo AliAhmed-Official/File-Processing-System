@@ -16,7 +16,7 @@ export class UploadController {
     private queueService: QueueService,
     private fileRepo: IFileRepository,
     private jobRepo: IJobRepository
-  ) {}
+  ) { }
 
   presign = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const data = PresignRequestSchema.parse(req.body);
@@ -55,10 +55,10 @@ export class UploadController {
       priority: presignData.priority ?? 5,
       validationRules: presignData.validationRules
         ? {
-            requiredFields: presignData.validationRules.requiredFields ?? [],
-            fieldTypes: presignData.validationRules.fieldTypes ?? {},
-            customPatterns: presignData.validationRules.customPatterns ?? {},
-          }
+          requiredFields: presignData.validationRules.requiredFields ?? [],
+          fieldTypes: presignData.validationRules.fieldTypes ?? {},
+          customPatterns: presignData.validationRules.customPatterns ?? {},
+        }
         : null,
       batchId: presignData.batchId ?? null,
       maxAttempts: config.QUEUE_MAX_RETRIES,

@@ -25,6 +25,7 @@ export class JobService {
       priority: job.priority,
       attempts: job.attempts,
       error: job.error,
+      validationRules: job.validationRules,
       createdAt: job.createdAt,
       startedAt: job.startedAt,
       completedAt: job.completedAt,

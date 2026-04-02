@@ -7,6 +7,11 @@ export interface JobStatusDTO {
   priority: number;
   attempts: number;
   error: string | null;
+  validationRules: {
+    requiredFields: string[];
+    fieldTypes: Record<string, string>;
+    customPatterns: Record<string, string>;
+  } | null;
   createdAt: Date;
   startedAt: Date | null;
   completedAt: Date | null;

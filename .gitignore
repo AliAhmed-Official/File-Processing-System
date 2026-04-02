@@ -1,6 +1,9 @@
 node_modules/
 dist/
-.env
 uploads/
 *.log
 coverage/
+.claude/
+docs/
+jest.config.ts
+.env
