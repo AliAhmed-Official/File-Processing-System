@@ -5,5 +5,4 @@ uploads/
 coverage/
 .claude/
 docs/
-jest.config.ts
 .env

@@ -101,6 +101,14 @@ export class UploadController {
       data.files.map((file) => this.storageService.verifyObject(file.s3Key, file.fileSize))
     );
 
+    const parsedRules = data.validationRules
+      ? {
+        requiredFields: data.validationRules.requiredFields ?? [],
+        fieldTypes: data.validationRules.fieldTypes ?? {},
+        customPatterns: data.validationRules.customPatterns ?? {},
+      }
+      : null;
+
     const jobsData: { jobId: string; fileId: string; priority: number }[] = [];
 
     for (const fileData of data.files) {
@@ -122,7 +130,7 @@ export class UploadController {
       const job = await this.jobRepo.create({
         fileId: file._id.toString(),
         priority: 3,
-        validationRules: null,
+        validationRules: parsedRules,
         batchId: data.batchId,
         maxAttempts: config.QUEUE_MAX_RETRIES,
       });

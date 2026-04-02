@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { api } from '../services/api';
 import { useQueryClient } from '@tanstack/react-query';
-import type { BatchPresignResponse, BatchConfirmResponse, BatchFileState } from '../types/upload.types';
+import type { BatchPresignResponse, BatchConfirmResponse, BatchFileState, ValidationRules } from '../types/upload.types';
 
 interface BatchUploadState {
   status: 'idle' | 'presigning' | 'uploading' | 'confirming' | 'done' | 'error';
@@ -36,7 +36,7 @@ export const useBatchUpload = () => {
   });
   const queryClient = useQueryClient();
 
-  const upload = useCallback(async (files: File[]) => {
+  const upload = useCallback(async (files: File[], options?: { validationRules?: ValidationRules }) => {
     const initialFiles: BatchFileState[] = files.map((file) => ({
       file,
       status: 'pending',
@@ -123,6 +123,7 @@ export const useBatchUpload = () => {
           originalName: sf.file.name,
           fileSize: sf.file.size,
         })),
+        validationRules: options?.validationRules,
       });
 
       // Map jobIds back to files

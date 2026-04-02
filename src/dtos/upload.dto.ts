@@ -40,6 +40,7 @@ export interface BatchPresignResponseDTO {
 export interface BatchConfirmDTO {
   batchId: string;
   files: ConfirmUploadDTO[];
+  validationRules?: ValidationRulesDTO;
 }
 
 export interface BatchConfirmResponseDTO {

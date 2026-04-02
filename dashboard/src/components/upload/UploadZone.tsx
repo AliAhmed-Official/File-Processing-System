@@ -81,7 +81,11 @@ export default function UploadZone() {
       } else {
         // Multiple files → batch upload
         setMode('batch');
-        batch.upload(files);
+        const rules = validationRulesRef.current;
+        const hasRules = (rules.requiredFields?.length ?? 0) > 0 ||
+          Object.keys(rules.fieldTypes ?? {}).length > 0 ||
+          Object.keys(rules.customPatterns ?? {}).length > 0;
+        batch.upload(files, hasRules ? { validationRules: rules } : undefined);
       }
     },
     [single, batch]
@@ -146,7 +150,7 @@ export default function UploadZone() {
 
           <div className="mt-5">
             <ValidationRulesForm onChange={(rules) => { validationRulesRef.current = rules; }} />
-            <p className="mt-1 text-xs text-gray-400">Validation rules apply to single file uploads only</p>
+            <p className="mt-1 text-xs text-gray-400">Validation rules apply to all uploaded files</p>
           </div>
 
           {validationError && (

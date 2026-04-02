@@ -29,4 +29,5 @@ export const BatchPresignRequestSchema = z.object({
 export const BatchConfirmSchema = z.object({
   batchId: z.string().uuid(),
   files: z.array(ConfirmUploadSchema).min(1).max(20),
+  validationRules: ValidationRulesSchema.optional(),
 });
