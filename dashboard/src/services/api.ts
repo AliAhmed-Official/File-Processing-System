@@ -11,12 +11,12 @@ interface ApiResponse<T> {
 }
 
 class ApiError extends Error {
-  constructor(
-    public code: string,
-    message: string,
-    public statusCode: number
-  ) {
+  code: string;
+  statusCode: number;
+  constructor(code: string, message: string, statusCode: number) {
     super(message);
+    this.code = code;
+    this.statusCode = statusCode;
   }
 }
 
