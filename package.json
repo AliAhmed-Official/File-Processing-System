@@ -12,8 +12,8 @@
     "start:api": "node dist/server.js",
     "start:worker": "node dist/worker.js",
     "test": "jest --runInBand",
-    "test:unit": "jest --testPathPattern=unit --runInBand",
-    "test:integration": "jest --testPathPattern=integration --runInBand"
+    "test:unit": "jest --testPathPatterns=unit --runInBand",
+    "test:integration": "jest --testPathPatterns=integration --runInBand"
   },
   "keywords": [],
   "author": "",
