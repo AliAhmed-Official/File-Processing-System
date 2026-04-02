@@ -28,7 +28,7 @@ A full-stack system for asynchronous CSV file processing using job queues. Two s
 - **Dashboard** (`dashboard/`) — React 19 + Vite + Tailwind CSS 4. Real-time job monitoring, file upload, and stats visualization with Recharts. Served via Nginx in production.
 - **Queue** — Redis + BullMQ with priority support, configurable concurrency and rate limiting.
 - **Database** — MongoDB with repository pattern (File, Job, Result collections).
-- **Storage** — Amazon S3 with presigned URLs for direct client uploads. Uses LocalStack for local development.
+- **Storage** — Amazon S3 with presigned URLs for direct client uploads.
 
 ## Tech Stack
 
@@ -70,7 +70,6 @@ A full-stack system for asynchronous CSV file processing using job queues. Two s
    AWS_ACCESS_KEY_ID=test
    AWS_SECRET_ACCESS_KEY=test
    S3_BUCKET=file-uploads
-   S3_ENDPOINT=http://localhost:4566   # LocalStack (optional, for local dev)
    ```
 
    See [`src/config/index.ts`](src/config/index.ts) for all available environment variables and their defaults.
@@ -201,7 +200,6 @@ file-processing-system/
 | `AWS_ACCESS_KEY_ID` | Yes | — | AWS access key |
 | `AWS_SECRET_ACCESS_KEY` | Yes | — | AWS secret key |
 | `S3_BUCKET` | Yes | — | S3 bucket name |
-| `S3_ENDPOINT` | No | — | Custom S3 endpoint (for LocalStack) |
 | `PORT` | No | `3000` | API server port |
 | `REDIS_HOST` | No | `localhost` | Redis hostname |
 | `REDIS_PORT` | No | `6379` | Redis port |
