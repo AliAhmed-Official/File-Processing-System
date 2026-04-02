@@ -7,6 +7,10 @@ export const createRedisConnection = (): IORedis => {
     host: config.REDIS_HOST,
     port: config.REDIS_PORT,
     maxRetriesPerRequest: null,
+    enableReadyCheck: true,
+    retryStrategy(times) {
+      return Math.min(times * 200, 5000);
+    },
   });
 
   connection.on('connect', () => logger.info('Redis connected'));

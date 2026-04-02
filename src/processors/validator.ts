@@ -50,7 +50,7 @@ export class RowValidator {
       if (value === undefined || value.trim() === '') continue;
 
       try {
-        const regex = new RegExp(pattern);
+        const regex = this.parseRegex(pattern);
         if (!regex.test(value)) {
           return { valid: false, reason: `Field "${field}" does not match pattern "${pattern}"` };
         }
@@ -60,6 +60,14 @@ export class RowValidator {
     }
 
     return { valid: true };
+  }
+
+  private parseRegex(pattern: string): RegExp {
+    const match = pattern.match(/^\/(.+)\/([gimsuy]*)$/);
+    if (match) {
+      return new RegExp(match[1], match[2]);
+    }
+    return new RegExp(pattern);
   }
 
   private validateType(value: string, type: FieldType): boolean {

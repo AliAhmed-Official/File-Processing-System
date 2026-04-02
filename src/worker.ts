@@ -14,12 +14,13 @@ import { logger } from './utils/logger';
 const startWorker = async (): Promise<void> => {
   await connectDB();
 
-  const redisConnection = createRedisConnection();
+  const workerRedis = createRedisConnection();
+  const cacheRedis = createRedisConnection();
   const fileRepo = createFileRepository();
   const jobRepo = createJobRepository();
   const resultRepo = createResultRepository();
   const storageService = new StorageService();
-  const cacheService = new CacheService(redisConnection);
+  const cacheService = new CacheService(cacheRedis);
 
   const worker = new Worker(
     'file-processing',
@@ -92,7 +93,7 @@ const startWorker = async (): Promise<void> => {
       logger.info('Job completed:', { jobId, totalRows: report.totalRows });
     },
     {
-      connection: redisConnection,
+      connection: workerRedis,
       concurrency: config.QUEUE_CONCURRENCY,
       limiter: {
         max: config.QUEUE_RATE_LIMIT_MAX,
