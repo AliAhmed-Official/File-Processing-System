@@ -13,6 +13,3 @@ export const JobListQuerySchema = z.object({
   priority: z.coerce.number().min(1).max(10).optional(),
 });
 
-export const BatchIdParamSchema = z.object({
-  batchId: z.string().uuid(),
-});

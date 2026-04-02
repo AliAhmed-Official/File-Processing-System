@@ -31,11 +31,3 @@ export interface JobListFilters {
   priority?: number;
 }
 
-export interface BatchStatusDTO {
-  batchId: string;
-  totalJobs: number;
-  completed: number;
-  failed: number;
-  inProgress: number;
-  pending: number;
-}

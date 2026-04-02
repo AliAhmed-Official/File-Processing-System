@@ -58,10 +58,6 @@ const startServer = async (): Promise<void> => {
   app.use(express.json());
   app.use(sanitizeMiddleware);
 
-  app.get('/health', async (_req, res) => {
-    res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } });
-  });
-
   app.use('/api', createRoutes(uploadController, jobController));
 
   app.use(errorMiddleware);

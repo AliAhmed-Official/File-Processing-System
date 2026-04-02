@@ -3,6 +3,5 @@ dist/
 uploads/
 *.log
 coverage/
-.claude/
 docs/
 .env

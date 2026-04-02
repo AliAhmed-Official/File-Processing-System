@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { JobService } from '../services/job.service';
-import { JobIdParamSchema, JobListQuerySchema, BatchIdParamSchema } from '../validators/job.validator';
+import { JobIdParamSchema, JobListQuerySchema } from '../validators/job.validator';
 import { asyncHandler } from '../utils/asyncHandler';
 
 export class JobController {
@@ -34,10 +34,4 @@ export class JobController {
     res.json({ success: true, data: stats });
   });
 
-  getBatchStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { batchId } = BatchIdParamSchema.parse(req.params);
-    const status = await this.jobService.getBatchStatus(batchId);
-
-    res.json({ success: true, data: status });
-  });
 }

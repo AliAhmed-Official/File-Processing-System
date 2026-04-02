@@ -3,7 +3,7 @@ import { IFileRepository } from '../repositories/interfaces/IFileRepository';
 import { IResultRepository } from '../repositories/interfaces/IResultRepository';
 import { ICacheService } from '../interfaces/ICacheService';
 import { JobStatus } from '../types/enums';
-import { JobStatusDTO, JobListDTO, JobListFilters, BatchStatusDTO } from '../dtos/job.dto';
+import { JobStatusDTO, JobListDTO, JobListFilters } from '../dtos/job.dto';
 import { JobResultDTO } from '../dtos/result.dto';
 import { PaginationQuery } from '../types';
 import { ApiError } from '../utils/ApiError';
@@ -85,22 +85,6 @@ export class JobService {
     await this.cache.set('stats:dashboard', stats, 10);
 
     return stats;
-  }
-
-  async getBatchStatus(batchId: string): Promise<BatchStatusDTO> {
-    const counts = await this.jobRepo.countByBatchId(batchId);
-    const totalJobs = Object.values(counts).reduce((sum, c) => sum + c, 0);
-
-    if (totalJobs === 0) throw ApiError.notFound('Batch not found');
-
-    return {
-      batchId,
-      totalJobs,
-      completed: counts[JobStatus.COMPLETED],
-      failed: counts[JobStatus.FAILED],
-      inProgress: counts[JobStatus.PROCESSING],
-      pending: counts[JobStatus.PENDING],
-    };
   }
 
   async invalidateJobCache(): Promise<void> {
