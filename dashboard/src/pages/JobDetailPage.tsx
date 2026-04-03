@@ -12,7 +12,7 @@ import { useJobDetail } from '../hooks/useJobDetail';
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { job, result, progress, isLoading, error } = useJobDetail(id!);
+  const { job, result, isLoading, error } = useJobDetail(id!);
 
   return (
     <div className="flex min-h-dvh">
@@ -43,7 +43,7 @@ export default function JobDetailPage() {
 
           {job && (
             <div className="space-y-4 animate-fade-in">
-              <JobInfo job={job} progress={progress} />
+              <JobInfo job={job} />
               <ValidationRulesSummary rules={job.validationRules} />
               {result && (
                 <>

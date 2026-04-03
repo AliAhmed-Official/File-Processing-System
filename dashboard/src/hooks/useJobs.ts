@@ -25,26 +25,9 @@ export const useJobs = (filters: JobListFilters = {}) => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
     };
 
-    const handleProgress = ({ jobId, progress }: { jobId: string; progress: number }) => {
-      queryClient.setQueriesData<JobListData>(
-        { queryKey: ['jobs'] },
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            jobs: old.jobs.map((job) =>
-              job.jobId === jobId ? { ...job, progress, status: 'processing' as const } : job
-            ),
-          };
-        }
-      );
-    };
-
     socket.on('stats:update', handleStatsUpdate);
-    socket.on('job:progress', handleProgress);
     return () => {
       socket.off('stats:update', handleStatsUpdate);
-      socket.off('job:progress', handleProgress);
     };
   }, [socket, queryClient]);
 

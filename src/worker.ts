@@ -14,12 +14,10 @@ const startWorker = async (): Promise<void> => {
   await connectDB();
 
   const redisConnection = createRedisConnection();
-  const emitterRedis = createRedisConnection();
   const fileRepo = createFileRepository();
   const jobRepo = createJobRepository();
   const resultRepo = createResultRepository();
   const storageService = new StorageService();
-  socketService.initializeEmitter(emitterRedis);
 
   const worker = new Worker(
     'file-processing',
@@ -63,10 +61,6 @@ const startWorker = async (): Promise<void> => {
         fileSize: file.size,
         validationRules,
         duplicateDetector,
-        onProgress: async (progress: number) => {
-          await bullJob.updateProgress(progress);
-          socketService.emitJobProgress(jobId, progress);
-        },
       });
 
       const result = await resultRepo.create({
@@ -82,7 +76,6 @@ const startWorker = async (): Promise<void> => {
       });
 
       await jobRepo.updateStatus(jobId, JobStatus.COMPLETED);
-      await jobRepo.updateProgress(jobId, 100);
       await jobRepo.setCompletedAt(jobId);
 
       socketService.emitJobCompleted(jobId, result._id.toString());
@@ -98,6 +91,7 @@ const startWorker = async (): Promise<void> => {
     {
       connection: redisConnection,
       concurrency: config.QUEUE_CONCURRENCY,
+      lockDuration: 300000,
       limiter: {
         max: config.QUEUE_RATE_LIMIT_MAX,
         duration: config.QUEUE_RATE_LIMIT_DURATION,

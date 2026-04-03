@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { JobStatusData } from '../../types/job.types';
 import StatusBadge from '../common/StatusBadge';
-import ProgressBar from './ProgressBar';
 
 export default function JobTable({ jobs }: { jobs: JobStatusData[] }) {
   return (
@@ -13,7 +12,7 @@ export default function JobTable({ jobs }: { jobs: JobStatusData[] }) {
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Job ID</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">File Name</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
+
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -32,7 +31,7 @@ export default function JobTable({ jobs }: { jobs: JobStatusData[] }) {
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 max-w-[200px] truncate" title={job.fileName}>{job.fileName}</td>
                 <td className="whitespace-nowrap px-4 py-3"><StatusBadge status={job.status} /></td>
-                <td className="px-4 py-3 w-40"><ProgressBar progress={job.progress} /></td>
+
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">{job.priority}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{new Date(job.createdAt).toLocaleString()}</td>
                 <td className="whitespace-nowrap px-4 py-3">

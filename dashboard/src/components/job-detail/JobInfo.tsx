@@ -1,8 +1,7 @@
 import type { JobStatusData } from '../../types/job.types';
 import StatusBadge from '../common/StatusBadge';
-import ProgressBar from '../jobs/ProgressBar';
 
-export default function JobInfo({ job, progress }: { job: JobStatusData; progress: number }) {
+export default function JobInfo({ job }: { job: JobStatusData }) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-3 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -11,12 +10,6 @@ export default function JobInfo({ job, progress }: { job: JobStatusData; progres
         </h2>
         <StatusBadge status={job.status} />
       </div>
-      {job.status === 'processing' && (
-        <div>
-          <ProgressBar progress={progress} />
-          <p className="mt-1 text-xs text-gray-500 tabular-nums">{progress}% complete</p>
-        </div>
-      )}
       <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
         <div><span className="text-gray-500">Priority:</span> {job.priority}</div>
         <div><span className="text-gray-500">Attempts:</span> <span className="tabular-nums">{job.attempts}</span></div>

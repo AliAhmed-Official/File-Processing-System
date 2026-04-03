@@ -14,11 +14,10 @@ export interface CsvProcessorOptions {
   fileSize: number;
   validationRules: IValidationRules | null;
   duplicateDetector: IDuplicateDetector;
-  onProgress: (progress: number) => void;
 }
 
 export const processCsv = (options: CsvProcessorOptions): Promise<IProcessingReport> => {
-  const { stream, fileSize, validationRules, duplicateDetector, onProgress } = options;
+  const { stream, fileSize, validationRules, duplicateDetector } = options;
 
   return new Promise((resolve, reject) => {
     const validator = new RowValidator();
@@ -28,15 +27,10 @@ export const processCsv = (options: CsvProcessorOptions): Promise<IProcessingRep
     let validRows = 0;
     let invalidRows = 0;
     let duplicateRows = 0;
-    let bytesProcessed = 0;
     const errorDetails: ErrorDetail[] = [];
     const startTime = Date.now();
 
     const csvStream = stream.pipe(csvParser());
-
-    stream.on('data', (chunk: Buffer) => {
-      bytesProcessed += chunk.length;
-    });
 
     csvStream.on('headers', (headers: string[]) => {
       validator.initialize(headers, validationRules);
@@ -68,11 +62,6 @@ export const processCsv = (options: CsvProcessorOptions): Promise<IProcessingRep
 
       duplicateDetector.add(row);
       validRows++;
-
-      if (totalRows % 1000 === 0) {
-        const progress = fileSize > 0 ? Math.min(Math.floor((bytesProcessed / fileSize) * 100), 99) : 0;
-        onProgress(progress);
-      }
     });
 
     csvStream.on('end', () => {

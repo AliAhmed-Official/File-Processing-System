@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { api } from '../services/api';
 import { useSocket } from './useSocket';
 import type { JobStatusData } from '../types/job.types';
@@ -8,7 +8,6 @@ import type { JobResultData } from '../types/result.types';
 export const useJobDetail = (jobId: string) => {
   const queryClient = useQueryClient();
   const socket = useSocket(`job:${jobId}`);
-  const [liveProgress, setLiveProgress] = useState<number | null>(null);
 
   const jobQuery = useQuery({
     queryKey: ['job', jobId],
@@ -23,15 +22,8 @@ export const useJobDetail = (jobId: string) => {
   });
 
   useEffect(() => {
-    const onProgress = (data: { jobId: string; progress: number }) => {
-      if (data.jobId === jobId) {
-        setLiveProgress(data.progress);
-      }
-    };
-
     const onCompleted = (data: { jobId: string }) => {
       if (data.jobId === jobId) {
-        setLiveProgress(100);
         queryClient.invalidateQueries({ queryKey: ['job', jobId] });
         queryClient.invalidateQueries({ queryKey: ['result', jobId] });
       }
@@ -43,12 +35,10 @@ export const useJobDetail = (jobId: string) => {
       }
     };
 
-    socket.on('job:progress', onProgress);
     socket.on('job:completed', onCompleted);
     socket.on('job:failed', onFailed);
 
     return () => {
-      socket.off('job:progress', onProgress);
       socket.off('job:completed', onCompleted);
       socket.off('job:failed', onFailed);
     };
@@ -57,7 +47,6 @@ export const useJobDetail = (jobId: string) => {
   return {
     job: jobQuery.data,
     result: resultQuery.data,
-    progress: liveProgress ?? jobQuery.data?.progress ?? 0,
     isLoading: jobQuery.isLoading,
     error: jobQuery.error,
   };
