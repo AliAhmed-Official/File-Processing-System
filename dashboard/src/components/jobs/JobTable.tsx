@@ -11,10 +11,12 @@ export default function JobTable({ jobs }: { jobs: JobStatusData[] }) {
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Job ID</th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">File Name</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -28,10 +30,19 @@ export default function JobTable({ jobs }: { jobs: JobStatusData[] }) {
                     {job.jobId.substring(0, 8)}...
                   </Link>
                 </td>
+                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 max-w-[200px] truncate" title={job.fileName}>{job.fileName}</td>
                 <td className="whitespace-nowrap px-4 py-3"><StatusBadge status={job.status} /></td>
                 <td className="px-4 py-3 w-40"><ProgressBar progress={job.progress} /></td>
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">{job.priority}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{new Date(job.createdAt).toLocaleString()}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <Link
+                    to={`/job/${job.jobId}`}
+                    className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    View Details
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>

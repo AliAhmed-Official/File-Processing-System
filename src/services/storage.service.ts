@@ -16,7 +16,9 @@ import { logger } from '../utils/logger';
 export class StorageService {
   private bucket = config.S3_BUCKET;
 
-  async generatePresignedUrl(filename: string): Promise<{ presignedUrl: string; s3Key: string }> {
+  private maxFileSize = 500 * 1024 * 1024; // 500MB
+
+  async generatePresignedUrl(filename: string, fileSize?: number): Promise<{ presignedUrl: string; s3Key: string }> {
     const tempId = uuidv4();
     const s3Key = `uploads/unconfirmed/${tempId}/${filename}`;
 
@@ -24,6 +26,7 @@ export class StorageService {
       Bucket: this.bucket,
       Key: s3Key,
       ContentType: 'text/csv',
+      ...(fileSize ? { ContentLength: fileSize } : {}),
     });
 
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
@@ -39,9 +42,17 @@ export class StorageService {
       });
       const response = await s3Client.send(command);
 
-      if (response.ContentLength !== expectedSize) {
+      const actualSize = response.ContentLength ?? 0;
+
+      if (actualSize > this.maxFileSize) {
         throw ApiError.badRequest(
-          `File size mismatch. Expected ${expectedSize} bytes, got ${response.ContentLength} bytes`
+          `File exceeds the maximum allowed size of 500MB. Uploaded file is ${Math.round(actualSize / (1024 * 1024))}MB`
+        );
+      }
+
+      if (actualSize !== expectedSize) {
+        throw ApiError.badRequest(
+          `File size mismatch. Expected ${expectedSize} bytes, got ${actualSize} bytes`
         );
       }
     } catch (error) {

@@ -19,7 +19,7 @@ export const PresignRequestSchema = z.object({
 export const ConfirmUploadSchema = z.object({
   s3Key: z.string().min(1),
   originalName: z.string().min(1).max(255),
-  fileSize: z.number().positive(),
+  fileSize: z.number().positive().max(500 * 1024 * 1024, 'File size must be under 500MB'),
 });
 
 export const BatchPresignRequestSchema = z.object({
@@ -29,5 +29,6 @@ export const BatchPresignRequestSchema = z.object({
 export const BatchConfirmSchema = z.object({
   batchId: z.string().uuid(),
   files: z.array(ConfirmUploadSchema).min(1).max(20),
+  priority: z.number().min(1).max(10).optional().default(5),
   validationRules: ValidationRulesSchema.optional(),
 });

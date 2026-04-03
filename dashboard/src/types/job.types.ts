@@ -4,6 +4,7 @@ export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export interface JobStatusData {
   jobId: string;
+  fileName: string;
   status: JobStatus;
   progress: number;
   priority: number;

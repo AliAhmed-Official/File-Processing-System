@@ -42,6 +42,7 @@ export default function UploadZone() {
   const [mode, setMode] = useState<'idle' | 'single' | 'batch'>('idle');
   const [dragOver, setDragOver] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [priority, setPriority] = useState<number>(5);
   const validationRulesRef = useRef<ValidationRules>({});
 
   const isIdle = mode === 'idle' || (mode === 'single' && single.status === 'idle') || (mode === 'batch' && batch.status === 'idle');
@@ -77,7 +78,7 @@ export default function UploadZone() {
         const hasRules = (rules.requiredFields?.length ?? 0) > 0 ||
           Object.keys(rules.fieldTypes ?? {}).length > 0 ||
           Object.keys(rules.customPatterns ?? {}).length > 0;
-        single.upload(files[0], hasRules ? { validationRules: rules } : undefined);
+        single.upload(files[0], { priority, ...(hasRules ? { validationRules: rules } : {}) });
       } else {
         // Multiple files → batch upload
         setMode('batch');
@@ -85,7 +86,7 @@ export default function UploadZone() {
         const hasRules = (rules.requiredFields?.length ?? 0) > 0 ||
           Object.keys(rules.fieldTypes ?? {}).length > 0 ||
           Object.keys(rules.customPatterns ?? {}).length > 0;
-        batch.upload(files, hasRules ? { validationRules: rules } : undefined);
+        batch.upload(files, { priority, ...(hasRules ? { validationRules: rules } : {}) });
       }
     },
     [single, batch]
@@ -146,6 +147,22 @@ export default function UploadZone() {
               />
             </label>
             <p className="mt-2 text-xs text-gray-400">CSV files up to 500MB each (max {MAX_FILES} files per batch)</p>
+          </div>
+
+          <div className="mt-5 flex items-center gap-3">
+            <label htmlFor="priority-select" className="text-sm font-medium text-gray-700">Priority</label>
+            <select
+              id="priority-select"
+              value={priority}
+              onChange={(e) => setPriority(Number(e.target.value))}
+              className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {n}{n === 1 ? ' (Highest)' : n === 5 ? ' (Default)' : n === 10 ? ' (Lowest)' : ''}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mt-5">

@@ -24,7 +24,7 @@ export class UploadController {
   presign = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const data = PresignRequestSchema.parse(req.body);
 
-    const { presignedUrl, s3Key } = await this.storageService.generatePresignedUrl(data.filename);
+    const { presignedUrl, s3Key } = await this.storageService.generatePresignedUrl(data.filename, data.fileSize);
 
     res.status(200).json({
       success: true,
@@ -88,7 +88,7 @@ export class UploadController {
 
     const files = await Promise.all(
       data.files.map(async (file) => {
-        const { presignedUrl, s3Key } = await this.storageService.generatePresignedUrl(file.filename);
+        const { presignedUrl, s3Key } = await this.storageService.generatePresignedUrl(file.filename, file.fileSize);
         return { presignedUrl, s3Key, expiresIn: 900 };
       })
     );
@@ -134,7 +134,7 @@ export class UploadController {
 
       const job = await this.jobRepo.create({
         fileId: file._id.toString(),
-        priority: 3,
+        priority: data.priority,
         validationRules: parsedRules,
         batchId: data.batchId,
         maxAttempts: config.QUEUE_MAX_RETRIES,

@@ -17,9 +17,10 @@ export class JobService {
     private cache: ICacheService
   ) { }
 
-  private toJobStatusDTO(job: IJobDocument): JobStatusDTO {
+  private toJobStatusDTO(job: IJobDocument, fileName: string): JobStatusDTO {
     return {
       jobId: job._id.toString(),
+      fileName,
       status: job.status,
       progress: job.progress,
       priority: job.priority,
@@ -35,7 +36,8 @@ export class JobService {
   async getJobStatus(id: string): Promise<JobStatusDTO> {
     const job = await this.jobRepo.findById(id);
     if (!job) throw ApiError.notFound('Job not found');
-    return this.toJobStatusDTO(job);
+    const file = await this.fileRepo.findById(job.fileId.toString());
+    return this.toJobStatusDTO(job, file?.originalName ?? 'Unknown');
   }
 
   async getJobResult(id: string): Promise<JobResultDTO> {
@@ -59,8 +61,15 @@ export class JobService {
   async listJobs(filters: JobListFilters, pagination: PaginationQuery): Promise<JobListDTO> {
     const result = await this.jobRepo.list(filters, pagination);
 
+    const fileIds = [...new Set(result.data.map((job) => job.fileId.toString()))];
+    const files = await Promise.all(fileIds.map((id) => this.fileRepo.findById(id)));
+    const fileNameMap = new Map<string, string>();
+    files.forEach((file) => {
+      if (file) fileNameMap.set(file._id.toString(), file.originalName);
+    });
+
     return {
-      jobs: result.data.map((job) => this.toJobStatusDTO(job)),
+      jobs: result.data.map((job) => this.toJobStatusDTO(job, fileNameMap.get(job.fileId.toString()) ?? 'Unknown')),
       total: result.total,
       page: result.page,
       limit: result.limit,

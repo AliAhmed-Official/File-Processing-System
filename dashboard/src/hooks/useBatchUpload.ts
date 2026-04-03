@@ -36,7 +36,7 @@ export const useBatchUpload = () => {
   });
   const queryClient = useQueryClient();
 
-  const upload = useCallback(async (files: File[], options?: { validationRules?: ValidationRules }) => {
+  const upload = useCallback(async (files: File[], options?: { priority?: number; validationRules?: ValidationRules }) => {
     const initialFiles: BatchFileState[] = files.map((file) => ({
       file,
       status: 'pending',
@@ -123,6 +123,7 @@ export const useBatchUpload = () => {
           originalName: sf.file.name,
           fileSize: sf.file.size,
         })),
+        priority: options?.priority ?? 5,
         validationRules: options?.validationRules,
       });
 

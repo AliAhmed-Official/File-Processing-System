@@ -2,6 +2,7 @@ import { JobStatus } from '../types/enums';
 
 export interface JobStatusDTO {
   jobId: string;
+  fileName: string;
   status: JobStatus;
   progress: number;
   priority: number;
