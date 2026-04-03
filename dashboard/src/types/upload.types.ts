@@ -37,3 +37,15 @@ export interface BatchFileState {
   error: string | null;
   s3Key: string | null;
 }
+
+export type ConcurrentUploadStatus = 'uploading' | 'confirming' | 'done' | 'error';
+
+export interface ConcurrentUploadEntry {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  progress: number;
+  status: ConcurrentUploadStatus;
+  error: string | null;
+  jobId: string | null;
+}
